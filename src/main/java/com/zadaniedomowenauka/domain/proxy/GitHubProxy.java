@@ -1,8 +1,8 @@
 package com.zadaniedomowenauka.domain.proxy;
+import com.zadaniedomowenauka.domain.error.UserNotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
@@ -11,7 +11,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 @Log4j2
-public class ItunesProxy {
+public class GitHubProxy {
 
     @Value("${itunes-proxy}")
     String url;
@@ -21,7 +21,7 @@ public class ItunesProxy {
 
     private final RestTemplate restTemplate;
 
-    public ItunesProxy(RestTemplate restTemplate) {
+    public GitHubProxy(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
@@ -41,7 +41,7 @@ public class ItunesProxy {
             );
             return response.getBody();
         } catch (RestClientResponseException exception){
-//            throw new UserNotFoundException("username: " + username + " not found");
+            throw new UserNotFoundException("username: " + username + " not found");
         } catch (RestClientException exception){
             String message = exception.getMessage();
             log.error(message);

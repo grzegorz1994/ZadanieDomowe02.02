@@ -1,48 +1,48 @@
 package com.zadaniedomowenauka.domain.service;
-import com.zadaniedomowenauka.domain.proxy.ItunesProxy;
-import com.zadaniedomowenauka.domain.proxy.dto.AllInfo;
-import com.zadaniedomowenauka.domain.proxy.dto.GitHubBranchResult;
-import com.zadaniedomowenauka.domain.proxy.dto.GithubResult;
-import com.zadaniedomowenauka.domain.proxy.dto.GitHubListAllResult;
+import com.zadaniedomowenauka.domain.proxy.GitHubProxy;
+import com.zadaniedomowenauka.domain.proxy.dto.AllInfoDto;
+import com.zadaniedomowenauka.domain.proxy.dto.GitHubBranchResultDto;
+import com.zadaniedomowenauka.domain.proxy.dto.GitHubResultDto;
+import com.zadaniedomowenauka.domain.proxy.dto.GitHubListAllResultDto;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ItunesService {
+public class GitHubService {
 
-    private final ItunesProxy itunesProxy;
-    private final ItunesMapper itunesMapper;
+    private final GitHubProxy gitHubProxy;
+    private final GitHubMapper gitHubMapper;
 
-    public ItunesService(ItunesProxy itunesProxy, ItunesMapper itunesMapper) {
-        this.itunesProxy = itunesProxy;
-        this.itunesMapper = itunesMapper;
+    public GitHubService(GitHubProxy gitHubProxy, GitHubMapper gitHubMapper) {
+        this.gitHubProxy = gitHubProxy;
+        this.gitHubMapper = gitHubMapper;
     }
 
-    public List<GithubResult> fetchAllRepos(String username){
-            String json = itunesProxy.makeGetRequest(username);
-            return itunesMapper.mapJsonToItunesResultList(json)
+    public List<GitHubResultDto> fetchAllRepos(String username){
+            String json = gitHubProxy.makeGetRequest(username);
+            return gitHubMapper.mapJsonToItunesResultList(json)
                     .stream()
-                    .filter(githubResult -> !githubResult.fork())
+                    .filter(gitHubResultDto -> !gitHubResultDto.fork())
                     .toList();
 
 
     }
 
-    public List<GitHubBranchResult> fetchAllBranches(String owner, String repo){
-        String json = itunesProxy.makeGetBranches(owner, repo);
-        return itunesMapper.mapJsonToGitHubBranchResult(json);
+    public List<GitHubBranchResultDto> fetchAllBranches(String owner, String repo){
+        String json = gitHubProxy.makeGetBranches(owner, repo);
+        return gitHubMapper.mapJsonToGitHubBranchResult(json);
     }
 
-    public GitHubListAllResult getAllSong(String username){
-        List<AllInfo> allInfos = new ArrayList<>();
-        List<GithubResult> itunesResults = fetchAllRepos(username);
-        for (GithubResult result : itunesResults){
-            List<GitHubBranchResult> branchResults = fetchAllBranches(result.owner().login(), result.name());
-            AllInfo allInformation = new AllInfo(result.name(), result.owner(), branchResults);
-            allInfos.add(allInformation);
+    public GitHubListAllResultDto getAllSong(String username){
+        List<AllInfoDto> allInfos = new ArrayList<>();
+        List<GitHubResultDto> itunesResults = fetchAllRepos(username);
+        for (GitHubResultDto result : itunesResults){
+            List<GitHubBranchResultDto> branchResults = fetchAllBranches(result.owner().login(), result.name());
+            AllInfoDto allInformationDto = new AllInfoDto(result.name(), result.owner(), branchResults);
+            allInfos.add(allInformationDto);
         }
-        return new GitHubListAllResult(allInfos);
+        return new GitHubListAllResultDto(allInfos);
     }
 }
