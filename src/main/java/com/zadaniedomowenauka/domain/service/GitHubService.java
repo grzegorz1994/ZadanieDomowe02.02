@@ -1,9 +1,6 @@
 package com.zadaniedomowenauka.domain.service;
 import com.zadaniedomowenauka.domain.proxy.GitHubProxy;
-import com.zadaniedomowenauka.domain.proxy.dto.AllInfoDto;
-import com.zadaniedomowenauka.domain.proxy.dto.GitHubBranchResultDto;
-import com.zadaniedomowenauka.domain.proxy.dto.GitHubResultDto;
-import com.zadaniedomowenauka.domain.proxy.dto.GitHubListAllResultDto;
+import com.zadaniedomowenauka.domain.proxy.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,26 +10,20 @@ import java.util.List;
 public class GitHubService {
 
     private final GitHubProxy gitHubProxy;
-    private final GitHubMapper gitHubMapper;
 
-    public GitHubService(GitHubProxy gitHubProxy, GitHubMapper gitHubMapper) {
+    public GitHubService(GitHubProxy gitHubProxy) {
         this.gitHubProxy = gitHubProxy;
-        this.gitHubMapper = gitHubMapper;
     }
 
     public List<GitHubResultDto> fetchAllRepos(String username){
-            String json = gitHubProxy.makeGetRequest(username);
-            return gitHubMapper.mapJsonToItunesResultList(json)
-                    .stream()
-                    .filter(gitHubResultDto -> !gitHubResultDto.fork())
-                    .toList();
-
-
+        return gitHubProxy.makeGetRequest(username)
+                .stream()
+                .filter(gitHubResultDto -> !gitHubResultDto.fork())
+                .toList();
     }
 
     public List<GitHubBranchResultDto> fetchAllBranches(String owner, String repo){
-        String json = gitHubProxy.makeGetBranches(owner, repo);
-        return gitHubMapper.mapJsonToGitHubBranchResult(json);
+        return gitHubProxy.makeGetBranches(owner, repo);
     }
 
     public GitHubListAllResultDto getAllSong(String username){

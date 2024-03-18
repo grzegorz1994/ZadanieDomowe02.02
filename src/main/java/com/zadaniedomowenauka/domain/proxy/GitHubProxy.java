@@ -1,23 +1,23 @@
 package com.zadaniedomowenauka.domain.proxy;
 import com.zadaniedomowenauka.domain.error.UserNotFoundException;
+import com.zadaniedomowenauka.domain.proxy.dto.GitHubBranchResultDto;
+import com.zadaniedomowenauka.domain.proxy.dto.GitHubResultDto;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Log4j2
 public class GitHubProxy {
 
-    @Value("${itunes-proxy}")
-    String url;
-
-    @Value("${itunes-port}")
-    int port;
+    private static final String URI_REPOS = "https://api.github.com/users/{username}/repos";
+    private static final String URI_BRANCH = "https://api.github.com/repos/{owner}/{repo}/branches";
 
     private final RestTemplate restTemplate;
 
@@ -25,21 +25,14 @@ public class GitHubProxy {
         this.restTemplate = restTemplate;
     }
 
-    public String makeGetRequest(String username){
+    public List<GitHubResultDto> makeGetRequest(String username){
         try {
-            UriComponentsBuilder builder = UriComponentsBuilder
-                    .newInstance()
-                    .scheme("https")
-                    .host(url)
-                    .port(port)
-                    .path("/users/" + username + "/repos");
-            ResponseEntity<String> response = restTemplate.exchange(
-                    builder.build().toUri(),
-                    HttpMethod.GET,
-                    null,
-                    String.class
+            ResponseEntity<GitHubResultDto[]> response = restTemplate.getForEntity(
+                    URI_REPOS, GitHubResultDto[].class, username
             );
-            return response.getBody();
+            GitHubResultDto[] gitHubResultDtos = response.getBody();
+            return Arrays.stream(gitHubResultDtos)
+                    .collect(Collectors.toList());
         } catch (RestClientResponseException exception){
             throw new UserNotFoundException("username: " + username + " not found");
         } catch (RestClientException exception){
@@ -49,21 +42,14 @@ public class GitHubProxy {
         return null;
     }
 
-    public String makeGetBranches(String owner, String repo){
+    public List<GitHubBranchResultDto> makeGetBranches(String owner, String repo){
         try {
-            UriComponentsBuilder builder = UriComponentsBuilder
-                    .newInstance()
-                    .scheme("https")
-                    .host(url)
-                    .port(port)
-                    .path("/repos/" + owner + "/" + repo + "/branches");
-            ResponseEntity<String> response = restTemplate.exchange(
-                    builder.build().toUri(),
-                    HttpMethod.GET,
-                    null,
-                    String.class
+            ResponseEntity<GitHubBranchResultDto[]> response = restTemplate.getForEntity(
+                    URI_BRANCH, GitHubBranchResultDto[].class, owner, repo
             );
-            return response.getBody();
+            GitHubBranchResultDto[] gitHubBranchResultDtos = response.getBody();
+            return Arrays.stream(gitHubBranchResultDtos)
+                    .collect(Collectors.toList());
         } catch (RestClientResponseException exception){
             String message = exception.getMessage() + exception.getStatusCode().value();
             log.error(message);
